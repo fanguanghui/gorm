@@ -1,6 +1,10 @@
 package lib
 
-import "strings"
+import (
+	"os"
+	"path/filepath"
+	"strings"
+)
 
 // SQLColumnToHumpStyle sql转换成驼峰模式
 func SQLColumnToHumpStyle(in string) (ret string) {
@@ -15,4 +19,29 @@ func SQLColumnToHumpStyle(in string) (ret string) {
 		}
 	}
 	return
+}
+
+// generate file by file path and bytes
+func GenerateFile(filePath string, bytes []byte) error {
+	dir, _ := filepath.Split(filePath)
+
+	_, err := os.Stat(dir)
+	if err != nil {
+		if os.IsNotExist(err) {
+			if err := os.Mkdir(dir, os.ModePerm); err != nil {
+				return err
+			}
+		}
+	}
+
+	f, err := os.Create(filePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.Write(bytes)
+	if err != nil {
+		return err
+	}
+	return nil
 }

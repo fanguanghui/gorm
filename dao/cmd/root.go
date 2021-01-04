@@ -2,19 +2,33 @@ package cmd
 
 import (
 	"fmt"
+	"gormfly/dao/lib"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
 )
 
-// rootCmd represents the base command when called without any subcommands
+var conf = lib.Config{}
+
 var rootCmd = &cobra.Command{
-	Use:   "dbmodel",
-	Short: "From mysql schema generate golang struct with gorm, json tag",
+	Use:   "gormDao",
+	Short: "Use `gormDao` generate golang Dao file",
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := lib.CheckConf(&conf); err != nil {
+			log.Fatalln(err)
+		}
+		p := lib.NewParser(conf.Input)
+		gen := lib.NewGenerator(conf.Output).SetImportPkg(conf.ImportPkgs).SetLogName(conf.LogName)
+		if conf.TransformErr {
+			gen = gen.TransformError()
+		}
+		if err := gen.ParserAST(p, conf.Structs).Generate().Format().Flush(); err != nil {
+			log.Fatalln(err)
+		}
+	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
@@ -22,4 +36,13 @@ func Execute() {
 	}
 }
 
-func init() {}
+func init() {
+	rootCmd.Flags().StringVar(&conf.Input, "input", ",model", "[Required] The name of the input file dir")
+	rootCmd.Flags().StringVar(&conf.Output, "output", ",model", "[Option] The name of the output file dir")
+	rootCmd.Flags().StringArrayVar(&conf.Structs, "structs", nil, "[Required] The name of schema structs to generate structs for, comma seperated")
+	rootCmd.Flags().StringArrayVar(&conf.Imports, "imports", nil, "[Required] The name of the import  to import package")
+	rootCmd.Flags().StringVar(&conf.LogName, "logName", "", "[Option] The name of log db error")
+	rootCmd.Flags().BoolVar(&conf.TransformErr, "transformErr", false, "[Option] The name of transform db err")
+	//rootCmd.Flags().Usage()
+	//rootCmd.Flags().Parsed()
+}

@@ -42,7 +42,7 @@ type config struct {
 // The Generator is the one responsible for generating the code, adding the imports, formatting, and writing it to the file.
 type Generator struct {
 	buf           map[string]*bytes.Buffer
-	inputFile     string
+	outputFile    string
 	config        config
 	structConfigs []structConfig
 }
@@ -50,8 +50,8 @@ type Generator struct {
 // NewGenerator function creates an instance of the generator given the name of the output file as an argument.
 func NewGenerator(outputFile string) *Generator {
 	return &Generator{
-		buf:       map[string]*bytes.Buffer{},
-		inputFile: outputFile,
+		buf:        map[string]*bytes.Buffer{},
+		outputFile: outputFile,
 	}
 }
 
@@ -197,7 +197,7 @@ func (g *Generator) Format() *Generator {
 // Flush function writes the output to the output file.
 func (g *Generator) Flush() error {
 	for k := range g.buf {
-		filename := g.inputFile + "/" + strings.ToLower(k) + "_dao.go"
+		filename := g.outputFile + "/" + strings.ToLower(k) + "_dao.go"
 		if err := ioutil.WriteFile(filename, g.buf[k].Bytes(), 0777); err != nil {
 			log.Fatalln(err)
 		}

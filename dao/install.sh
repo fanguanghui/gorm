@@ -4,8 +4,8 @@ dir=$GOPATH
 
 echo "GOPATH="$dir
 
-go build -o gormdao ./cmd/gormdao/main.go
+go build -o gormDao ./main.go
 
-mv gormdao $dir/bin
+mv gormDao $dir/bin
 
-echo "install success"
+echo "gormDao install success"
